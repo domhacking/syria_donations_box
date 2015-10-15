@@ -1,0 +1,99 @@
+/**
+ * Shortcut to create the base of a pseudo-element (:after, :before)
+ * You can set any position and dimension you want
+ *
+ * @param   List $pos     List containing the object's position and size
+ *
+ * e.g.
+ * 		@include pseudo-content(top left width 100% height 100%);
+ * 		@include pseudo-content(bottom 10px width 500px height 20px);
+ * 		@include pseudo-content(top left);
+ */
+@mixin pseudo-content($args: ()) {
+  @include position(absolute, $args, true);
+  content: "";
+}
+
+
+
+
+
+/**
+ * Absolute position
+ * e.g.
+ * 		@include absolute(top right);
+ * 		@include absolute(top 20px right);
+ * 		@include absolute(top 20px right 100px);
+ * 		@include absolute(top right bottom left);
+ */
+@mixin absolute($args: ()) {
+  @include position(absolute, $args);
+}
+
+/**
+ * Fixed position
+ * e.g.
+ * 		@include fixed(top right);
+ * 		@include fixed(top 20px right);
+ * 		@include fixed(top 20px right 100px);
+ * 		@include fixed(top right bottom left);
+ */
+@mixin fixed($args: ()) {
+  @include position(fixed, $args);
+}
+
+/**
+ * Fixed position
+ * e.g.
+ * 		@include relative(top right);
+ * 		@include relative(top 20px right);
+ * 		@include relative(top 20px right 100px);
+ * 		@include relative(top right bottom left);
+ */
+@mixin relative($args: ()) {
+  @include position(relative, $args);
+}
+
+
+
+
+
+
+/**
+ * Position mixin based on Hugo Giraudel's mixin
+ * Includes also shortcuts for "absolute", "fixed" and "relative" positions
+ */
+@mixin position($position, $args: (), $includeSize: false) {
+  $offsets: top right bottom left;
+
+  @if $includeSize {
+    $offsets: join($offsets, (width height));
+  }
+
+  @each $offset in $offsets {
+    $index: index($args, $offset);
+
+    @if $index {
+      @if $index == length($args) {
+        #{$offset}: 0;
+      }
+      @else {
+        $next: nth($args, $index + 1);
+        @if is-valid-length($next) {
+          #{$offset}: $next;
+        }
+        @else if index($offsets, $next) {
+          #{$offset}: 0;
+        }
+        @else {
+          @warn "Invalid value `#{$next}` for offset `#{$offset}`.";
+        }
+      }
+    }
+  }
+}
+
+@function is-valid-length($value) {
+  @return (type-of($value) == "number" and not unitless($value))
+       or (index(auto initial inherit 0, $value) != false);
+}
